@@ -37,7 +37,7 @@ const FarmerDashboard = () => {
       try {
         const [ordersRes, produceRes] = await Promise.all([
           orderService.getOrders(),
-          produceService.getProduce({ farmerId: user?.id }),
+          produceService.getProduce({ farmerId: user?.id || user?._id }),
         ]);
         setOrders(ordersRes.orders || []);
         setProduceCount(produceRes.count || 0);

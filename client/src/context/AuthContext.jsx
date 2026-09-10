@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -27,8 +27,17 @@ export const DEMO_ACCOUNTS = {
   },
 };
 
+const normalizeUser = (u) => {
+  if (!u) return null;
+  return {
+    ...u,
+    id: u.id || u._id,
+    _id: u._id || u.id,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(authService.getCurrentUser());
+  const [user, setUser] = useState(normalizeUser(authService.getCurrentUser()));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,7 +46,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const currentUser = await authService.getMe();
-          setUser(currentUser);
+          setUser(normalizeUser(currentUser));
         } catch (err) {
           console.warn('Session expired or invalid:', err);
           authService.logout();
@@ -51,13 +60,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const data = await authService.login(email, password);
-    setUser(data.user);
+    setUser(normalizeUser(data.user));
     return data.user;
   };
 
   const register = async (userData) => {
     const data = await authService.register(userData);
-    setUser(data.user);
+    setUser(normalizeUser(data.user));
     return data.user;
   };
 

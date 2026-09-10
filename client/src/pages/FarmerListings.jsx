@@ -13,7 +13,7 @@ const FarmerListings = () => {
 
   const fetchMyListings = async () => {
     try {
-      const data = await produceService.getProduce({ farmerId: user?.id });
+      const data = await produceService.getProduce({ farmerId: user?.id || user?._id });
       setListings(data.produce || []);
     } catch (err) {
       setError('Failed to fetch your produce listings');

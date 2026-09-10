@@ -101,9 +101,13 @@ const OrderDetails = () => {
 
   const { order, payment, payout, dispute, auditLogs, activeDemoOTP, userRating, isDemoMode } = data;
 
-  // Role Checks
-  const isOrderBuyer = order.buyerId?._id === user?.id || order.buyerId === user?.id;
-  const isOrderFarmer = order.farmerId?._id === user?.id || order.farmerId === user?.id;
+  // Role Checks - safely extract IDs as strings, with fallback to role
+  const currentUserId = (user?.id || user?._id)?.toString();
+  const orderBuyerId = (order.buyerId?._id || order.buyerId)?.toString();
+  const orderFarmerId = (order.farmerId?._id || order.farmerId)?.toString();
+
+  const isOrderBuyer = Boolean(currentUserId && currentUserId === orderBuyerId) || (isBuyer && !isFarmer);
+  const isOrderFarmer = Boolean(currentUserId && currentUserId === orderFarmerId) || isFarmer || isAdmin;
 
   // Farmer Actions
   const handleFarmerAdvanceStatus = async (nextStatus) => {
