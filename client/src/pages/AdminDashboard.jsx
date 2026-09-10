@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../services/adminService';
+import { produceService } from '../services/produceService';
 import StatusBadge, { PaymentBadge } from '../components/StatusBadge';
 import {
   ShieldAlert,
@@ -13,6 +14,7 @@ import {
   RotateCcw,
   Loader2,
   ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
@@ -79,7 +81,26 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-wrap gap-2">
+          <button
+            onClick={async () => {
+              if (window.confirm('Are you sure you want to delete ALL produce listings? This will wipe the marketplace clean so you can create fresh listings.')) {
+                try {
+                  const res = await produceService.clearAllProduce();
+                  alert(res.message || 'All produce listings deleted successfully.');
+                  window.location.reload();
+                } catch (err) {
+                  alert(err.response?.data?.error || 'Failed to clear produce listings');
+                }
+              }
+            }}
+            className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5"
+            title="Wipe all demo produce listings from database"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+            <span>Clear All Produce Listings</span>
+          </button>
+
           <Link
             to="/disputes"
             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow transition-all flex items-center space-x-1.5"

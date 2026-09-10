@@ -1,4 +1,4 @@
-﻿import api from './api';
+import api from './api';
 
 export const produceService = {
   getProduce: async (params = {}) => {
@@ -23,6 +23,11 @@ export const produceService = {
 
   deleteProduce: async (id) => {
     const res = await api.delete(`/produce/${id}`);
+    return res.data;
+  },
+
+  clearAllProduce: async () => {
+    const res = await api.delete('/produce/clear-all');
     return res.data;
   },
 

@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const {
   getProduce,
@@ -6,6 +6,7 @@ const {
   createProduce,
   updateProduce,
   deleteProduce,
+  clearAllProduce,
   getMarketReferencePrices,
 } = require('../controllers/produceController');
 const { verifyToken } = require('../middleware/authMiddleware');
@@ -13,6 +14,7 @@ const { checkRole } = require('../middleware/roleMiddleware');
 
 router.get('/', getProduce);
 router.get('/reference-prices', getMarketReferencePrices);
+router.delete('/clear-all', verifyToken, checkRole('ADMIN'), clearAllProduce);
 router.get('/:id', getProduceById);
 router.post('/', verifyToken, checkRole('FARMER', 'ADMIN'), createProduce);
 router.put('/:id', verifyToken, checkRole('FARMER', 'ADMIN'), updateProduce);

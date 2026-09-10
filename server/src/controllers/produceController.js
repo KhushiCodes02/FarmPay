@@ -1,4 +1,4 @@
-﻿const Produce = require('../models/Produce');
+const Produce = require('../models/Produce');
 
 const MARKET_REFERENCE_PRICES = {
   'Wheat': 22,
@@ -168,6 +168,15 @@ const deleteProduce = async (req, res) => {
     return res.json({ message: 'Produce listing deactivated successfully' });
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Error deleting produce listing' });
+  }
+};
+
+const clearAllProduce = async (req, res) => {
+  try {
+    const result = await Produce.deleteMany({});
+    return res.json({ message: 'All produce listings deleted successfully', deletedCount: result.deletedCount });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Error clearing produce listings' });
   }
 };
 

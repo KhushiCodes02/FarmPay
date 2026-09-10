@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { produceService } from '../services/produceService';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,7 @@ import MarketPriceCompare from '../components/MarketPriceCompare';
 const ProduceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, isBuyer, quickLoginAs } = useAuth();
+  const { user, isAuthenticated, isBuyer, isAdmin, quickLoginAs } = useAuth();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -220,6 +220,25 @@ const ProduceDetails = () => {
               <span>Proceed to Escrow Checkout</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            {(isAdmin || (user && produce.farmerId && (user.id === produce.farmerId._id || user.id === produce.farmerId))) && (
+              <button
+                onClick={async () => {
+                  if (window.confirm(`Are you sure you want to delete "${produce.cropName}"?`)) {
+                    try {
+                      await produceService.deleteProduce(produce._id);
+                      alert('Produce listing deleted successfully.');
+                      navigate('/marketplace');
+                    } catch (err) {
+                      alert(err.response?.data?.error || 'Failed to delete produce listing');
+                    }
+                  }
+                }}
+                className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-semibold text-xs flex items-center justify-center space-x-1.5 transition-colors"
+              >
+                <span>🗑️ Delete Listing</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
