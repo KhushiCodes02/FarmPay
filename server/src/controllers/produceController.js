@@ -198,5 +198,6 @@ module.exports = {
   createProduce,
   updateProduce,
   deleteProduce,
+  clearAllProduce,
   getMarketReferencePrices,
 };
