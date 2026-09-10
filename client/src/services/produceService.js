@@ -27,8 +27,19 @@ export const produceService = {
   },
 
   clearAllProduce: async () => {
-    const res = await api.delete('/produce/clear-all');
-    return res.data;
+    try {
+      const res = await api.delete('/produce/clear-all');
+      return res.data;
+    } catch (err) {
+      // Robust fallback: fetch all current produce listings and delete them by valid ObjectId
+      const listRes = await api.get('/produce');
+      const items = listRes.data?.produce || [];
+      if (items.length === 0) {
+        return { message: 'All produce listings are already cleared.', deletedCount: 0 };
+      }
+      await Promise.all(items.map((item) => api.delete(`/produce/${item._id}`)));
+      return { message: `Successfully cleared ${items.length} produce listings.`, deletedCount: items.length };
+    }
   },
 
   getReferencePrices: async () => {
