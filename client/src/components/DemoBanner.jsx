@@ -1,9 +1,30 @@
-﻿import React from 'react';
-import { useAuth, DEMO_ACCOUNTS } from '../context/AuthContext';
-import { Sparkles, UserCheck, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { ShieldCheck, Loader2 } from 'lucide-react';
 
 const DemoBanner = () => {
   const { user, quickLoginAs } = useAuth();
+  const navigate = useNavigate();
+  const [switching, setSwitching] = useState('');
+
+  const handleQuickSwitch = async (role) => {
+    setSwitching(role);
+    try {
+      await quickLoginAs(role);
+      if (role === 'ADMIN') {
+        navigate('/admin');
+      } else if (role === 'FARMER') {
+        navigate('/farmer/dashboard');
+      } else if (role === 'BUYER') {
+        navigate('/buyer/dashboard');
+      }
+    } catch (err) {
+      alert('Quick login failed: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setSwitching('');
+    }
+  };
 
   return (
     <div className="bg-slate-900 text-slate-200 text-xs border-b border-slate-800 py-1.5 px-4 shadow-sm">
@@ -22,39 +43,42 @@ const DemoBanner = () => {
           <span className="text-slate-400 hidden md:inline">Quick Switch Demo:</span>
           
           <button
-            onClick={() => quickLoginAs('FARMER')}
-            className={`px-2 py-1 rounded transition-colors flex items-center space-x-1 ${
+            onClick={() => handleQuickSwitch('FARMER')}
+            disabled={!!switching}
+            className={`px-2.5 py-1 rounded transition-colors flex items-center space-x-1 ${
               user?.role === 'FARMER'
                 ? 'bg-emerald-600 text-white font-medium'
                 : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
             }`}
             title="Switch to Demo Farmer (Ram Kumar)"
           >
-            <span>🌾 Farmer</span>
+            {switching === 'FARMER' ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>🌾 Farmer</span>}
           </button>
 
           <button
-            onClick={() => quickLoginAs('BUYER')}
-            className={`px-2 py-1 rounded transition-colors flex items-center space-x-1 ${
+            onClick={() => handleQuickSwitch('BUYER')}
+            disabled={!!switching}
+            className={`px-2.5 py-1 rounded transition-colors flex items-center space-x-1 ${
               user?.role === 'BUYER'
                 ? 'bg-emerald-600 text-white font-medium'
                 : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
             }`}
             title="Switch to Demo Buyer (Rohit Mehta)"
           >
-            <span>🛒 Buyer</span>
+            {switching === 'BUYER' ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>🛒 Buyer</span>}
           </button>
 
           <button
-            onClick={() => quickLoginAs('ADMIN')}
-            className={`px-2 py-1 rounded transition-colors flex items-center space-x-1 ${
+            onClick={() => handleQuickSwitch('ADMIN')}
+            disabled={!!switching}
+            className={`px-2.5 py-1 rounded transition-colors flex items-center space-x-1 ${
               user?.role === 'ADMIN'
                 ? 'bg-purple-600 text-white font-medium'
                 : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
             }`}
-            title="Switch to Demo Admin"
+            title="Switch to Demo Admin (Platform Operations)"
           >
-            <span>🛡️ Admin</span>
+            {switching === 'ADMIN' ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>🛡️ Admin</span>}
           </button>
 
           {user && (
