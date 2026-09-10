@@ -1,4 +1,4 @@
-﻿const User = require('../models/User');
+const User = require('../models/User');
 const Order = require('../models/Order');
 const Payment = require('../models/Payment');
 const Payout = require('../models/Payout');
@@ -89,9 +89,35 @@ const getRecentAuditTrail = async (req, res) => {
   }
 };
 
+const resetPlatformData = async (req, res) => {
+  try {
+    const Produce = require('../models/Produce');
+    const OTP = require('../models/OTP');
+    const Rating = require('../models/Rating');
+
+    await Promise.all([
+      Produce.deleteMany({}),
+      Order.deleteMany({}),
+      Payment.deleteMany({}),
+      Payout.deleteMany({}),
+      Dispute.deleteMany({}),
+      AuditLog.deleteMany({}),
+      OTP.deleteMany({}),
+      Rating.deleteMany({}),
+    ]);
+
+    return res.json({
+      message: 'Platform demo data reset successfully. All orders, GMV, payments, and disputes are now cleared.',
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Error resetting platform data' });
+  }
+};
+
 module.exports = {
   getStats,
   getAllUsers,
   getAllOrders,
   getRecentAuditTrail,
+  resetPlatformData,
 };

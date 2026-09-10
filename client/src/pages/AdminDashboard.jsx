@@ -98,7 +98,26 @@ const AdminDashboard = () => {
             title="Wipe all demo produce listings from database"
           >
             <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-            <span>Clear All Produce Listings</span>
+            <span>Clear Marketplace Produce</span>
+          </button>
+
+          <button
+            onClick={async () => {
+              if (window.confirm('Are you sure you want to RESET all platform data? This will clear all orders, GMV, payments, and disputes back to 0, giving you a completely fresh platform.')) {
+                try {
+                  const res = await adminService.resetPlatformData();
+                  alert(res.message || 'Platform data reset to zero successfully.');
+                  window.location.reload();
+                } catch (err) {
+                  alert(err.response?.data?.error || 'Failed to reset platform data');
+                }
+              }
+            }}
+            className="px-3.5 py-2 bg-slate-100 hover:bg-purple-600 hover:text-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5"
+            title="Reset GMV, orders, payouts, and disputes back to 0"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Platform Data (Zero All Orders & GMV)</span>
           </button>
 
           <Link

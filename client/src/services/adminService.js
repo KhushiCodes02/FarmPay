@@ -1,4 +1,4 @@
-﻿import api from './api';
+import api from './api';
 
 export const ratingService = {
   createRating: async (ratingData) => {
@@ -30,6 +30,11 @@ export const adminService = {
 
   getRecentAuditTrail: async () => {
     const res = await api.get('/admin/audit-trail');
+    return res.data;
+  },
+
+  resetPlatformData: async () => {
+    const res = await api.post('/admin/reset-data');
     return res.data;
   },
 };
