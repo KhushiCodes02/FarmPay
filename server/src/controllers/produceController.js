@@ -153,6 +153,14 @@ const updateProduce = async (req, res) => {
 
 const deleteProduce = async (req, res) => {
   try {
+    if (req.params.id === 'clear-all' || req.params.id === 'all') {
+      return clearAllProduce(req, res);
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid produce ID.' });
+    }
+
     const produce = await Produce.findById(req.params.id);
     if (!produce) {
       return res.status(404).json({ error: 'Produce listing not found' });
@@ -162,10 +170,10 @@ const deleteProduce = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized to delete this listing.' });
     }
 
-    produce.status = 'INACTIVE';
-    await produce.save();
+    // Permanently remove or mark inactive
+    await Produce.findByIdAndDelete(req.params.id);
 
-    return res.json({ message: 'Produce listing deactivated successfully' });
+    return res.json({ message: 'Produce listing deleted successfully' });
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Error deleting produce listing' });
   }
