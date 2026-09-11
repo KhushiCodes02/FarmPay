@@ -221,7 +221,9 @@ const ProduceDetails = () => {
               <ArrowRight className="w-4 h-4" />
             </button>
 
-            {(isAdmin || (user && produce.farmerId && (user.id === produce.farmerId._id || user.id === produce.farmerId))) && (
+            {(isAdmin || (user && produce.farmerId && (
+              (user.id || user._id)?.toString() === (produce.farmerId._id || produce.farmerId)?.toString()
+            ))) && (
               <button
                 onClick={async () => {
                   if (window.confirm(`Are you sure you want to delete "${produce.cropName}"?`)) {

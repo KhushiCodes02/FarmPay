@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Produce = require('../models/Produce');
 
 const MARKET_REFERENCE_PRICES = {
@@ -66,6 +67,10 @@ const getProduce = async (req, res) => {
 
 const getProduceById = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid produce ID format.' });
+    }
+
     const produce = await Produce.findById(req.params.id)
       .populate('farmerId', 'name email phone location rating ratingCount businessName');
 
@@ -124,12 +129,19 @@ const createProduce = async (req, res) => {
 
 const updateProduce = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid produce ID format.' });
+    }
+
     const produce = await Produce.findById(req.params.id);
     if (!produce) {
       return res.status(404).json({ error: 'Produce listing not found' });
     }
 
-    if (produce.farmerId.toString() !== req.user.id && req.user.role !== 'ADMIN') {
+    const farmerIdStr = (produce.farmerId?._id || produce.farmerId)?.toString();
+    const userIdStr = (req.user?.id || req.user?._id)?.toString();
+
+    if (farmerIdStr !== userIdStr && req.user?.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Unauthorized to edit this produce listing.' });
     }
 
@@ -158,7 +170,7 @@ const deleteProduce = async (req, res) => {
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ error: 'Invalid produce ID.' });
+      return res.status(400).json({ error: 'Invalid produce ID format.' });
     }
 
     const produce = await Produce.findById(req.params.id);
@@ -166,11 +178,13 @@ const deleteProduce = async (req, res) => {
       return res.status(404).json({ error: 'Produce listing not found' });
     }
 
-    if (produce.farmerId.toString() !== req.user.id && req.user.role !== 'ADMIN') {
+    const farmerIdStr = (produce.farmerId?._id || produce.farmerId)?.toString();
+    const userIdStr = (req.user?.id || req.user?._id)?.toString();
+
+    if (farmerIdStr !== userIdStr && req.user?.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Unauthorized to delete this listing.' });
     }
 
-    // Permanently remove or mark inactive
     await Produce.findByIdAndDelete(req.params.id);
 
     return res.json({ message: 'Produce listing deleted successfully' });
