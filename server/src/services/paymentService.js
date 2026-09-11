@@ -13,20 +13,20 @@ class PaymentService {
   /**
    * Create Razorpay Order / Payment session
    */
-  async createPayment({ orderId, amount, customerInfo, orderNumber }) {
+  async createPayment({ orderId, amount, customerInfo, orderNumber, preferDemo = false }) {
     if (!orderId || !amount || amount <= 0) {
       throw new Error('Valid order ID and positive amount are required');
     }
 
     let razorpayOrderId;
-    let paymentLinkUrl = null;
+    let isSimulated = false;
 
-    if (!isDemoMode && razorpayInstance) {
+    if (!preferDemo && razorpayInstance) {
       try {
         const rzpOrder = await razorpayInstance.orders.create({
           amount: Math.round(amount * 100), // convert to paise
           currency: 'INR',
-          receipt: orderNumber || `rcpt_${orderId}`,
+          receipt: (orderNumber || `rcpt_${orderId}`).slice(0, 40),
           notes: {
             orderId: orderId.toString(),
             buyerEmail: customerInfo?.email || '',
@@ -36,10 +36,12 @@ class PaymentService {
       } catch (err) {
         console.warn('Razorpay API error in createPayment, falling back to simulated order:', err.message);
         razorpayOrderId = `order_demo_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        isSimulated = true;
       }
     } else {
-      // Clear DEMO MODE simulation
+      // Demo simulation
       razorpayOrderId = `order_demo_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      isSimulated = true;
     }
 
     const payment = await Payment.create({
@@ -52,7 +54,7 @@ class PaymentService {
     await auditService.logAction(orderId, customerInfo?.userId, 'Payment Created', {
       amount,
       razorpayOrderId,
-      isDemoMode,
+      isDemoMode: isSimulated,
     });
 
     return {
@@ -60,7 +62,8 @@ class PaymentService {
       razorpayOrderId,
       amount,
       keyId,
-      isDemoMode,
+      isDemoMode: isSimulated,
+      hasLiveRazorpay: Boolean(razorpayInstance),
       currency: 'INR',
     };
   }
@@ -81,13 +84,14 @@ class PaymentService {
 
     let isValid = false;
 
-    if (isDemoMode || razorpayOrderId.startsWith('order_demo_')) {
+    if (razorpayOrderId.startsWith('order_demo_') || !process.env.RAZORPAY_KEY_SECRET) {
       // Demo validation - verify payload is present
       isValid = Boolean(razorpayOrderId && razorpayPaymentId);
     } else {
       // Official Razorpay HMAC-SHA256 signature verification
+      const secret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
       const generatedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
+        .createHmac('sha256', secret)
         .update(`${razorpayOrderId}|${razorpayPaymentId}`)
         .digest('hex');
 

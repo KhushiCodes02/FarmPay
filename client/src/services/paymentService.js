@@ -1,8 +1,8 @@
-﻿import api from './api';
+import api from './api';
 
 export const paymentService = {
-  createPaymentSession: async (orderId) => {
-    const res = await api.post('/payments/create', { orderId });
+  createPaymentSession: async (orderId, preferDemo = false) => {
+    const res = await api.post('/payments/create', { orderId, preferDemo });
     return res.data;
   },
 

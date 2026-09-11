@@ -1,9 +1,9 @@
-﻿const paymentService = require('../services/paymentService');
+const paymentService = require('../services/paymentService');
 const Order = require('../models/Order');
 
 const createPayment = async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, preferDemo } = req.body;
     const order = await Order.findById(orderId);
 
     if (!order) {
@@ -23,6 +23,7 @@ const createPayment = async (req, res) => {
       amount: order.totalAmount,
       customerInfo: { email: req.user.email, userId: req.user.id },
       orderNumber: order.orderNumber,
+      preferDemo: Boolean(preferDemo),
     });
 
     return res.json({

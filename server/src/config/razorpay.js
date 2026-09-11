@@ -1,23 +1,33 @@
-﻿const Razorpay = require("razorpay");
+const Razorpay = require("razorpay");
 
-const isDemoMode = process.env.DEMO_MODE === "true" || !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.startsWith("rzp_test_farmpaydemo");
+const rawKeyId = (process.env.RAZORPAY_KEY_ID || "").trim();
+const rawKeySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
+
+const keyId = rawKeyId || "rzp_test_farmpaydemo123";
+const keySecret = rawKeySecret;
 
 let razorpayInstance = null;
 
 try {
-  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  if (keyId && keySecret && !keyId.startsWith("rzp_test_farmpaydemo")) {
     razorpayInstance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+      key_id: keyId,
+      key_secret: keySecret,
     });
   }
 } catch (error) {
   console.warn("Razorpay client initialization warning (using demo mode fallback):", error.message);
 }
 
+const isDemoMode = process.env.DEMO_MODE === "true" || !process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.startsWith("rzp_test_farmpaydemo") || process.env.NODE_ENV === "test";
+
 module.exports = {
   razorpayInstance,
   isDemoMode,
-  keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_farmpaydemo123",
-  webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || "demo_webhook_secret_farmpay",
+  keyId,
+  keySecret,
+  hasLiveRazorpay: Boolean(razorpayInstance),
+  webhookSecret: (process.env.RAZORPAY_WEBHOOK_SECRET || "demo_webhook_secret_farmpay").trim(),
 };
+
+
